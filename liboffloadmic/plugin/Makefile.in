@@ -688,7 +688,7 @@ main_target_image.h: offload_target_main
 	@echo "};" >> $@
 
 offload_target_main: $(liboffload_dir)/ofldbegin.o offload_target_main.o $(liboffload_dir)/ofldend.o
-	$(CXX) $(AM_LDFLAGS) $^ -o $@
+	$(CXX) $^ -o $@ $(AM_LDFLAGS)
 
 offload_target_main.o: offload_target_main.cpp
 	$(CXX) $(AM_CXXFLAGS) $(AM_CPPFLAGS) -c $< -o $@
