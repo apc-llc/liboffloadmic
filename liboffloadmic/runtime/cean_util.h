@@ -106,10 +106,10 @@ void    __arr_desc_dump(
     const arr_desc *adp,
     bool dereference);
 #else
-#define __arr_desc_dump(
-    spaces,
-    name,
-    adp,
+#define __arr_desc_dump( \
+    spaces, \
+    name, \
+    adp, \
     dereference)
 #endif // OFFLOAD_DEBUG
 
