@@ -22,13 +22,13 @@ $ cd ../..
 $ cd libgomp
 $ mkdir build_target
 $ cd build_target
-$ ../configure --disable-multilib --build=x86_64-intelmic-linux-gnu --host=x86_64-intelmic-linux-gnu --target=x86_64-intelmic-linux-gnu CXX="g++ -g -O2 -I$(pwd)/../../include -D_GNU_SOURCE -DLINUX" --prefix=$(pwd)/../../install/target
+$ ../configure --disable-multilib --build=x86_64-intelmic-linux-gnu --host=x86_64-intelmic-linux-gnu --target=x86_64-intelmic-linux-gnu CC=gcc CXX="g++ -g -O2 -I$(pwd)/../../include -D_GNU_SOURCE -DLINUX" --prefix=$(pwd)/../../install/target
 $ make -j12
 $ make install
 $ cd ..
 $ mkdir build_host
 $ cd build_host
-$ ../configure --disable-multilib --build=x86_64-pc-linux-gnu --host=x86_64-pc-linux-gnu --target=x86_64-pc-linux-gnu CXX="g++ -g -O2 -D_GNU_SOURCE -DLINUX" --prefix=$(pwd)/../../install/host
+$ ../configure --disable-multilib --build=x86_64-pc-linux-gnu --host=x86_64-pc-linux-gnu --target=x86_64-pc-linux-gnu CC=gcc CXX="g++ -g -O2 -D_GNU_SOURCE -DLINUX" --prefix=$(pwd)/../../install/host
 $ make -j12
 $ make install
 $ cd ../..
