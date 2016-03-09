@@ -1,10 +1,27 @@
+#
+# Run "make" on login node.
+# Run "make run" on allocated compute node.
+#
+
+# Modules to load on Anselm's login node and allocated compute node
+LOADMODULES_LOGIN :=
+LOADMODULES_ALLOC :=
+
+# Check we are on Anselm. Otherwise, locally installed Xeon Phi is expected.
+ANSELM := echo $PS1 | grep -oh ansel
+
+ifneq (,$(ANSELM))
+LOADMODULES_LOGIN := module load GCCcore/4.9.3 && module load binutils/2.25-GCCcore-4.9.3 &&
+LOADMODULES_ALLOC := module load gcc/4.9.0 &&
+endif
+
 all: test
 
 test: test.c
-	gcc -g -I. $< -o $@ -I../libgomp -I../libgomp/build_host -I../libgomp/config/posix -L../install/host/lib -lgomp-plugin-intelmic -lpthread
+	$(LOADMODULES_LOGIN) gcc -g -I. $< -o $@ -I../libgomp -I../libgomp/build_hos -I../libgomp/config/posix -L../install/host/lib64 -lgomp-plugin-intelmic -loffloadmic_host -lpthread -Wl,-rpath=`pwd`/../install/host/lib64
 
 run: test
-	LD_PRELOAD=/opt/intel/mic/coi/host-linux-release/lib/libcoi_host.so.0 ./$<
+	$(LOADMODULES_ALLOC) LD_PRELOAD=/opt/intel/mic/coi/host-linux-release/lib/libcoi_host.so.0 ./$<
 
 clean:
 	rm -rf test
