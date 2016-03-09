@@ -23,7 +23,7 @@ test: test.c
 	$(LOADMODULES_LOGIN) gcc -g -I. $< -o $@ -I../libgomp -I../libgomp/build_hos -I../libgomp/config/posix -L../install/host/lib/$(TOOLEXECLIBDIR) -lgomp-plugin-intelmic -loffloadmic_host -lpthread -Wl,-rpath=`pwd`/../install/host/lib/$(TOOLEXECLIBDIR)
 
 run: test
-	$(LOADMODULES_ALLOC) LD_PRELOAD=/opt/intel/mic/coi/host-linux-release/lib/libcoi_host.so.0 ./$<
+	$(LOADMODULES_ALLOC) LD_PRELOAD=/opt/intel/mic/coi/host-linux-release/lib/libcoi_host.so.0 LD_LIBRARY_PATH=$(LD_LIBRARY_PATH):`pwd`/../install/target/lib/../lib ./$<
 
 clean:
 	rm -rf test
