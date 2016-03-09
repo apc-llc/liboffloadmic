@@ -2,6 +2,8 @@
 
 const char * GOMP_OFFLOAD_get_name (void);
 
+int GOMP_OFFLOAD_get_num_devices (void);
+
 int main(int argc, char* argv[])
 {
 	const char* name = GOMP_OFFLOAD_get_name();
