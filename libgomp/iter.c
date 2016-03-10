@@ -26,6 +26,11 @@
 /* This file contains routines for managing work-share iteration, both
    for loops and sections.  */
 
+#ifdef __MIC__
+#define __atomic_load_n atomic_load_n_long
+long atomic_load_n_long (long *ptr, int memorder);
+#endif
+
 #include "libgomp.h"
 #include <stdlib.h>
 

@@ -30,6 +30,12 @@
 
 #include "libgomp.h"
 
+#ifdef __MIC__
+#define __atomic_load_n atomic_load_n_unsigned_int
+#define __atomic_store_n atomic_store_n_unsigned_int
+unsigned int atomic_load_n_unsigned_int (unsigned int *ptr, int memorder);
+void atomic_store_n_unsigned_int (unsigned int *ptr, unsigned int val, int memorder);
+#endif
 
 void
 gomp_barrier_init (gomp_barrier_t *bar, unsigned count)

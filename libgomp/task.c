@@ -27,6 +27,25 @@
    creation and termination.  */
 
 #include "libgomp.h"
+
+#ifdef __MIC__
+#define __atomic_load_n_gomp_task atomic_load_n_gomp_task
+#define __atomic_store_n_gomp_task atomic_store_n_gomp_task
+struct gomp_task* atomic_load_n_gomp_task (struct gomp_task **ptr, int memorder);
+void atomic_store_n_gomp_task (struct gomp_task **ptr, struct gomp_task *val, int memorder);
+
+#define __atomic_load_n_size_t atomic_load_n_size_t
+#define __atomic_store_n_size_t atomic_store_n_size_t
+size_t atomic_load_n_size_t (size_t *ptr, int memorder);
+void atomic_store_n_size_t (size_t *ptr, size_t val, int memorder);
+#else
+#define __atomic_load_n_gomp_task __atomic_load_n
+#define __atomic_store_n_gomp_task __atomic_store_n
+
+#define __atomic_load_n_size_t __atomic_load_n
+#define __atomic_store_n_size_t __atomic_store_n
+#endif
+
 #include <stdlib.h>
 #include <string.h>
 
@@ -628,7 +647,7 @@ gomp_task_run_post_remove_parent (struct gomp_task *child_task)
 	 need a release barrier here to ensure memory
 	 written by child_task->fn above is flushed
 	 before the NULL is written.  */
-      __atomic_store_n (&parent->children, NULL, MEMMODEL_RELEASE);
+      __atomic_store_n_gomp_task (&parent->children, NULL, MEMMODEL_RELEASE);
       if (parent->taskwait && parent->taskwait->in_taskwait)
 	{
 	  parent->taskwait->in_taskwait = false;
@@ -654,7 +673,7 @@ gomp_task_run_post_remove_taskgroup (struct gomp_task *child_task)
 	 need a release barrier here to ensure memory
 	 written by child_task->fn above is flushed
 	 before the NULL is written.  */
-      __atomic_store_n (&taskgroup->num_children, 0, MEMMODEL_RELEASE);
+      __atomic_store_n_size_t (&taskgroup->num_children, 0, MEMMODEL_RELEASE);
     }
   if (taskgroup->children != child_task)
     return;
@@ -786,7 +805,7 @@ GOMP_taskwait (void)
      child thread task work function are seen before we exit from
      GOMP_taskwait.  */
   if (task == NULL
-      || __atomic_load_n (&task->children, MEMMODEL_ACQUIRE) == NULL)
+      || __atomic_load_n_gomp_task (&task->children, MEMMODEL_ACQUIRE) == NULL)
     return;
 
   memset (&taskwait, 0, sizeof (taskwait));
@@ -1106,7 +1125,7 @@ GOMP_taskgroup_end (void)
      this point, but we must ensure that all writes to memory by a
      child thread task work function are seen before we exit from
      GOMP_taskgroup_end.  */
-  if (__atomic_load_n (&taskgroup->num_children, MEMMODEL_ACQUIRE) == 0)
+  if (__atomic_load_n_size_t (&taskgroup->num_children, MEMMODEL_ACQUIRE) == 0)
     goto finish;
 
   gomp_mutex_lock (&team->task_lock);

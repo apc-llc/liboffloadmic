@@ -25,6 +25,11 @@
 
 /* This file handles the ORDERED construct.  */
 
+#ifdef __MIC__
+#define __atomic_thread_fence atomic_thread_fence_int
+void atomic_thread_fence_int (int memorder);
+#endif
+
 #include "libgomp.h"
 
 
