@@ -127,7 +127,7 @@ void Engine::init_process(void)
     // Create execution context in the specified device
     OFFLOAD_DEBUG_TRACE(2, "Getting device %d (engine %d) handle\n", m_index,
                         m_physical_index);
-    res = COI::EngineGetHandle(COI_ISA_MIC, m_physical_index, &engine);
+    res = COI::EngineGetHandle(COI_ISA_KNC, m_physical_index, &engine);
     check_result(res, c_get_engine_handle, m_index, res);
 
     // Target executable should be available by the time when we
