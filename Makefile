@@ -14,12 +14,12 @@ target ?= undefined
 REMOVE_LIBCOI_DEVICE := true
 REMOVE_LIBCOI_HOST := true
 ifeq (undefined,$(target))
-ifeq (,$(shell ping -c1 -W1 mic0 2>/dev/null || echo 'server is down' | grep "server is down"))
+ifeq ("server is down",$(shell ping -c1 -W1 mic0 2>/dev/null || echo 'server is down' | grep "server is down"))
+target := emulation
+else
 target := native
 REMOVE_LIBCOI_DEVICE := rm -rf ../install/target/lib64/libcoi_device*
 REMOVE_LIBCOI_HOST := rm -rf install/host/lib64/libcoi_host*
-else
-target := emulation
 endif
 endif
 
