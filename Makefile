@@ -37,7 +37,8 @@ MIC_CC := $(HOST_CC)
 MIC_CXX := $(HOST_CXX)
 endif
 
-HOST_CFLAGS := -I$(shell pwd)/libgomp/runtime -I$(shell pwd)/libgomp/include/coi -I$(shell pwd)/liboffloadmic/build_target/plugin/ -g -O0 -D_GNU_SOURCE -DLINUX
+HOST_LIB_PATH := $(INSTALL_PREFIX)/host/lib/$(shell $(MIC_CC) -print-multi-os-directory)
+HOST_CFLAGS := -I$(shell pwd)/libgomp/runtime -I$(shell pwd)/libgomp/include/coi -I$(shell pwd)/liboffloadmic/build_target/plugin/ -g -O3 -D_GNU_SOURCE -DLINUX
 HOST_CXXFLAGS := $(HOST_CFLAGS)
 
 TARGET_LIB_PATH := $(INSTALL_PREFIX)/target/lib/$(shell $(MIC_CC) -print-multi-os-directory)
@@ -68,9 +69,9 @@ endif
 
 LIBOFFLOADMIC_HOST := install/host/lib/$(shell $(MIC_CC) -print-multi-os-directory)/liboffloadmic_host.so
 
-all: $(LIBOFFLOADMIC_HOST)
+all: $(LIBOFFLOADMIC_HOST) install/host/lib/$(TOOLEXECLIBDIR)/libmicrt.so install/host/include/mic_runtime.h
 
-$(TARGET_LIB_PATH)/libintrinsics.a: intrinsics/build_target/intrinsics.o
+$(TARGET_LIB_PATH)/libintrinsics.so: intrinsics/build_target/intrinsics.o
 	$(LOAD_GCC_MODULE) && mkdir -p $(TARGET_LIB_PATH) && ar rcs $@ $<
 
 intrinsics/build_target/intrinsics.o: intrinsics/intrinsics.c
@@ -108,8 +109,17 @@ $(LIBOFFLOADMIC_HOST): $(DEPENDS_ON_INTRINSICS_OR_NOT)
 
 TOOLEXECLIBDIR := $(shell gcc -print-multi-os-directory)
 
-test/test: test/test.c $(LIBOFFLOADMIC_HOST)
-	$(LOADMODULES_LOGIN) gcc -g -Iinstall/host/include $< -o $@ -Linstall/host/lib/$(TOOLEXECLIBDIR) -lgomp-plugin-intelmic -loffloadmic_host -lpthread -Wl,-rpath=$(shell pwd)/install/host/lib/$(TOOLEXECLIBDIR)
+install/host/include/mic_runtime.h: libmicrt/mic_runtime.h
+	mkdir -p install/host/include && cp $< $@
+
+install/host/lib/$(TOOLEXECLIBDIR)/libmicrt.so: libmicrt/build_host/micrt.o $(LIBOFFLOADMIC_HOST)
+	$(LOAD_GCC_MODULE) && mkdir -p $(HOST_LIB_PATH) && $(HOST_CXX) $< -shared -o $@ -Linstall/host/lib/$(TOOLEXECLIBDIR) -Bstatic -lgomp-plugin-intelmic -loffloadmic_host -Bdynamic -lpthread
+
+libmicrt/build_host/micrt.o: libmicrt/micrt.cpp libmicrt/mic_runtime.h
+	$(LOAD_GCC_MODULE) && mkdir -p libmicrt/build_host && $(HOST_CXX) $(HOST_CXXFLAGS) -Ilibmicrt -c -fPIC $< -o $@
+
+test/test: test/test.c install/host/lib/$(TOOLEXECLIBDIR)/libmicrt.so install/host/include/mic_runtime.h
+	$(LOADMODULES_LOGIN) gcc -g -Iinstall/host/include $< -o $@ -Linstall/host/lib/$(TOOLEXECLIBDIR) -lmicrt -Wl,-rpath=$(shell pwd)/install/host/lib/$(TOOLEXECLIBDIR)
 
 ifeq (native,$(target))
 run: test/test
@@ -122,6 +132,7 @@ endif
 clean:
 	rm -rf install && \
 	rm -rf intrinsics/build_target && \
+	rm -rf libmicrt/build_host && \
 	rm -rf liboffloadmic/build_target && \
 	rm -rf liboffloadmic/build_host && \
 	rm -rf libgomp/build_target && \

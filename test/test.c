@@ -1,37 +1,36 @@
-#include <stdio.h>
+#include <mic_runtime.h>
+#include <stdlib.h>
 #include <string.h>
 
-const char * GOMP_OFFLOAD_get_name (void);
-int GOMP_OFFLOAD_get_num_devices (void);
-void GOMP_OFFLOAD_init_device (int device);
-void * GOMP_OFFLOAD_alloc (int device, size_t size);
-void GOMP_OFFLOAD_free (int device, void *tgt_ptr);
-void * GOMP_OFFLOAD_host2dev (int device, void *tgt_ptr, const void *host_ptr, size_t size);
-void * GOMP_OFFLOAD_dev2host (int device, void *host_ptr, const void *tgt_ptr, size_t size);
+#define MIC_ERROR_CHECK(x) do { micError_t err = x; if (( err ) != micSuccess ) { \
+	printf ("Error %d at %s :%d \n" , err, __FILE__ , __LINE__ ) ; exit(-1);\
+}} while (0)
 
 int main(int argc, char* argv[])
 {
-	const char* name = GOMP_OFFLOAD_get_name();
-	printf("GOMP backend for %s\n", name);
+	const char* name;
+	MIC_ERROR_CHECK(micGetPlatformName(&name));
+	printf("CUDA-like runtime API powered by GOMP backend for %s\n", name);
 	
-	int num_devices = GOMP_OFFLOAD_get_num_devices();
+	int num_devices;
+	MIC_ERROR_CHECK(micGetDeviceCount(&num_devices));
 	printf("%d %s device(s) available\n", num_devices, name);
 	
 	if (!num_devices) return 1;
 	
-	GOMP_OFFLOAD_init_device(0);
-	
 	const char* host_input = "Hello, device memory!";
 	size_t szbuffer = strlen(host_input) + 1;
 	char host_output[szbuffer];
-	void* device_buffer = GOMP_OFFLOAD_alloc(0, szbuffer);
 	
-	GOMP_OFFLOAD_host2dev(0, device_buffer, host_input, szbuffer);
-	GOMP_OFFLOAD_dev2host(0, host_output, device_buffer, szbuffer);
+	void* device_buffer;
+	MIC_ERROR_CHECK(micMalloc(&device_buffer, szbuffer));
+	
+	MIC_ERROR_CHECK(micMemcpy(device_buffer, host_input, szbuffer, micMemcpyHostToDevice));
+	MIC_ERROR_CHECK(micMemcpy(host_output, device_buffer, szbuffer, micMemcpyDeviceToHost));
 	
 	printf("%s\n", host_output);
-	
-	GOMP_OFFLOAD_free(0, device_buffer);
+
+	MIC_ERROR_CHECK(micFree(device_buffer));
 	
 	return 0;
 }
