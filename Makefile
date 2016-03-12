@@ -14,7 +14,7 @@ target ?= undefined
 REMOVE_LIBCOI_DEVICE := true
 REMOVE_LIBCOI_HOST := true
 ifeq (undefined,$(target))
-ifeq ("server is down",$(shell ping -c1 -W1 mic0 2>/dev/null || echo 'server is down' | grep "server is down"))
+ifeq (server is down,$(shell ping -c1 -W1 mic0 2>/dev/null || echo 'server is down' | grep "server is down"))
 target := emulation
 else
 target := native
