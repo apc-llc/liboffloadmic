@@ -142,21 +142,25 @@ void Engine::init_process(void)
         __target_exe->name, __target_exe->data, __target_exe->size);
 
     res = COI::ProcessCreateFromMemory(
-        engine,                       // in_Engine
-        __target_exe->name,           // in_pBinaryName
-        __target_exe->data,           // in_pBinaryBuffer
-        __target_exe->size,           // in_BinaryBufferLength,
-        0,                            // in_Argc
-        0,                            // in_ppArgv
-        environ == 0,                 // in_DupEnv
-        environ,                      // in_ppAdditionalEnv
-        mic_proxy_io,                 // in_ProxyActive
-        mic_proxy_fs_root,            // in_ProxyfsRoot
-        mic_buffer_size,              // in_BufferSpace
-        NULL, /*mic_library_path,*/   // in_LibrarySearchPath
-        __target_exe->origin,         // in_FileOfOrigin
-        __target_exe->offset,         // in_FileOfOriginOffset
-        &m_process                    // out_pProcess
+        engine,                 // in_Engine
+        __target_exe->name,     // in_pBinaryName
+        __target_exe->data,     // in_pBinaryBuffer
+        __target_exe->size,     // in_BinaryBufferLength,
+        0,                      // in_Argc
+        0,                      // in_ppArgv
+        environ == 0,           // in_DupEnv
+        environ,                // in_ppAdditionalEnv
+        mic_proxy_io,           // in_ProxyActive
+        mic_proxy_fs_root,      // in_ProxyfsRoot
+        mic_buffer_size,        // in_BufferSpace
+#ifdef __MIC__
+        NULL,
+#else
+        mic_library_path,       // in_LibrarySearchPath
+#endif
+        __target_exe->origin,   // in_FileOfOrigin
+        __target_exe->offset,   // in_FileOfOriginOffset
+        &m_process              // out_pProcess
     );
     check_result(res, c_process_create, m_index, res);
 
