@@ -260,8 +260,6 @@ void __liboffload_error_support(error_types input_tag, ...)
             break;
     }
     va_end(args);
-
-    fprintf(stderr, "%s\n", report_get_message_str(input_tag));
 }
 
 char const * report_get_message_str(error_types input_tag)
