@@ -3,10 +3,10 @@
 
 #include <stdio.h>
 
-#ifdef __cplusplus
+#if defined(__cplusplus)
 extern "C"
 {
-#endif
+#endif /* __cplusplus */
 
 // MIC error types
 enum micError
@@ -114,9 +114,24 @@ enum micMemcpyKind
 
 micError_t micMemcpy(void* dst, const void* src, size_t size, enum micMemcpyKind kind);
 
-#ifdef __cplusplus
+// Load the specified ELF image containing device functions.
+micError_t micRegisterModule(unsigned char* image, size_t size);
+
+struct dim3
+{
+    unsigned int x, y, z;
+#if defined(__cplusplus)
+    dim3(unsigned int vx = 1, unsigned int vy = 1, unsigned int vz = 1) : x(vx), y(vy), z(vz) {}
+#endif /* __cplusplus */
+};
+
+typedef struct dim3 dim3;
+
+micError_t micLaunchKernel(const char *func, /*dim3 gridDim, dim3 blockDim,*/ void **args);
+
+#if defined(__cplusplus)
 }
-#endif
+#endif /* __cplusplus */
 
 #endif // MICDEVRT_H
 

@@ -1,16 +1,14 @@
+#include <libgomp/libgomp-plugin.h> // addr_pair
 #include <mic_runtime.h>
 #include <pthread.h>
-#include <vector>
-
-using namespace std;
 
 // As in CUDA, different devices can be binded
 // to different host threads.
 static __thread int currentDevice = 0;
 
-static vector<bool> initialized;
-
 static pthread_mutex_t lock = PTHREAD_MUTEX_INITIALIZER;
+
+static bool initialized = false;
 
 extern "C"
 {
@@ -21,14 +19,22 @@ extern "C"
 	void GOMP_OFFLOAD_free (int device, void *tgt_ptr);
 	void * GOMP_OFFLOAD_host2dev (int device, void *tgt_ptr, const void *host_ptr, size_t size);
 	void * GOMP_OFFLOAD_dev2host (int device, void *host_ptr, const void *tgt_ptr, size_t size);
+	int GOMP_OFFLOAD_load_image (int device, void *target_image, addr_pair **result);
 
-	static inline void initialize()
+	__attribute__((constructor)) static void initialize()
 	{
 		pthread_mutex_lock(&lock);
-		if (!initialized[currentDevice])
+		if (!initialized)
 		{
-			GOMP_OFFLOAD_init_device(currentDevice);
-			initialized[currentDevice] = true;
+			int count = 0;
+			micGetDeviceCount(&count);
+
+			// Initialized all devices at once, because offload_image()
+			// sets up image on all devices, presuming they are initialized.
+			for (int i = 0; i < count; i++)
+				GOMP_OFFLOAD_init_device(i);
+
+			initialized = true;
 		}
 		pthread_mutex_unlock(&lock);		
 	}
@@ -56,7 +62,10 @@ extern "C"
 
 	micError_t micSetDevice(int device)
 	{
-		if (device >= initialized.size())
+		int count = 0;
+		micGetDeviceCount(&count);
+
+		if (device >= count)
 			return micErrorInvalidDevice;
 
 		currentDevice = device;
@@ -66,8 +75,6 @@ extern "C"
 
 	micError_t micMalloc(void** devPtr, size_t size)
 	{
-		initialize();
-
 		if (!devPtr)
 			return micErrorInvalidDevicePointer;
 
@@ -81,9 +88,6 @@ extern "C"
 
 	micError_t micFree(void* devPtr)
 	{
-		if (!initialized[currentDevice])
-			return micErrorInitializationError;
-
 		if (!devPtr)
 			return micErrorInvalidDevicePointer;
 	
@@ -94,8 +98,6 @@ extern "C"
 
 	micError_t micMemcpy(void* dst, const void* src, size_t size, micMemcpyKind kind)
 	{
-		initialize();
-		
 		if (kind == micMemcpyHostToDevice)
 		{
 			if (!dst)
@@ -117,21 +119,53 @@ extern "C"
 		
 		return micSuccess;
 	}
-}
-
-namespace
-{
-	class Init
-	{
-	public :
-		Init()
-		{
-			int count = 0;
-			micGetDeviceCount(&count);
-			initialized.resize(count);
-		}
-	};
 	
-	static Init init;
+	// Load the specified ELF image containing device functions.
+	micError_t micRegisterModule(unsigned char* image, size_t size)
+	{
+		if (!image)
+			return micErrorInvalidValue;
+	
+		// Could be called earlier than constructor-attributed initialized()
+		// function, because kernels register themselves also with
+		// constructor attribute.
+		if (!initialized)
+			initialize();
+	
+		addr_pair *table = NULL;
+		void* im_start_end[2];
+		im_start_end[0] = (void*)image;
+		im_start_end[1] = (void*)(image + size);
+		int sztable = GOMP_OFFLOAD_load_image(currentDevice, im_start_end, &table);
+		
+		for (int i = 0; i < sztable; i++)
+			printf("%p %p\n", sztable[i].start, sztable[i].end);
+		
+		return micSuccess;
+	}
+
+	micError_t micLaunchKernel(const char *func, /*dim3 gridDim, dim3 blockDim,*/ void **args)
+	{
+		if (!func)
+			return micErrorInvalidDeviceFunction;
+		
+		/*if ((gridDim.x == 0) || (gridDim.y == 0) || (gridDim.z == 0))
+			return micErrorInvalidConfiguration;
+
+		if ((blockDim.x == 0) || (blockDim.y == 0) || (blockDim.z == 0))
+			return micErrorInvalidConfiguration;*/
+		
+		// TODO Load target image with the requested function.
+		//addr_pair *result = NULL;
+		//GOMP_OFFLOAD_load_image(currentDevice, image, &result);
+
+		// TODO run function		
+		//GOMP_OFFLOAD_run(currentDevice, void *tgt_fn, void *tgt_vars);
+
+		// micErrorLaunchFailure
+		// micErrorLaunchTimeout
+		// micErrorLaunchOutOfResources
+		// micErrorSharedObjectInitFailed		
+	}
 }
 
