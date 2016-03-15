@@ -304,6 +304,10 @@ offload_image (void *target_image)
 	{
 	  addr_pair tgt_addr;
 	  tgt_addr.start = (uintptr_t) table[i];
+	  // Confusing +1 here actually means nothing.
+	  // It is set because for variables (see the code below)
+	  // we offset by variable size. Here, we don't need
+	  // sizes of functions, so we set +1, or whatever.
 	  tgt_addr.end = tgt_addr.start + 1;
 	  TRACE ("() func %d:\t0x%llx..0x%llx", i,
 		 tgt_addr.start, tgt_addr.end);
