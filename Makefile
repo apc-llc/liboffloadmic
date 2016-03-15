@@ -5,6 +5,8 @@
 
 include Makefile.inc
 
+.PHONY: test
+
 all: $(LIBOFFLOADMIC_HOST) install/host/lib/$(TOOLEXECLIBDIR)/libmicrt.so install/host/include/mic_runtime.h
 
 $(TARGET_LIB_PATH)/libintrinsics.so: intrinsics/build_target/intrinsics.o
@@ -55,6 +57,9 @@ libmicrt/build_host/micrt.o: libmicrt/micrt.cpp libmicrt/mic_runtime.h
 test/test: test/test.o test/kernel_embed_mic.o install/host/lib/$(TOOLEXECLIBDIR)/libmicrt.so
 	cd test && $(MAKE)
 
+test:
+	cd test && $(MAKE)
+
 run: test/test
 	cd test && $(MAKE) run
 
@@ -66,5 +71,5 @@ clean:
 	rm -rf liboffloadmic/build_host && \
 	rm -rf libgomp/build_target && \
 	rm -rf libgomp/build_host && \
-	rm -rf test/test
+	cd test && $(MAKE) clean
 
