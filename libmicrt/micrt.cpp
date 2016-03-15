@@ -138,8 +138,8 @@ extern "C"
 		im_start_end[1] = (void*)(image + size);
 		int sztable = GOMP_OFFLOAD_load_image(currentDevice, im_start_end, &table);
 		
-		for (int i = 0; i < sztable; i++)
-			printf("%p %p\n", sztable[i].start, sztable[i].end);
+		for (int i = 0; i < sztable / sizeof(void*); i++)
+			printf("%p %p\n", (void*)(table[i].start), (void*)(table[i].end));
 		
 		return micSuccess;
 	}
