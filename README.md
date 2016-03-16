@@ -21,7 +21,12 @@ $ make target=emul
 ### Testing
 
 ```
-$ cd liboffloadmic
+$ cd liboffloadmic/test
+$ make
 $ make run
-
+LD_LIBRARY_PATH=:/home/marcusmae/apc/liboffloadmic/test/../install/target/lib/../lib ./test
+CUDA-like runtime API powered by GOMP backend for intelmic
+1 intelmic device(s) available
+Result is correct
 ```
+
