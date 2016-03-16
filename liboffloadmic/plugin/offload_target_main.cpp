@@ -119,6 +119,12 @@ __offload_target_init_proc (OFFLOAD ofldt)
 static void
 __offload_target_table_p1 (OFFLOAD ofldt)
 {
+#ifdef GET_DEVICE_SYMBOL_ADDRESS_SUPPORT
+  // Do nothing: we don't ship symbols tables with compiled objects.
+  // They are dlsym'ed in runtime instead.
+  return;
+#endif
+
   void ***lib_descr = (void ***) last_loaded_library;
 
   if (lib_descr == NULL)
