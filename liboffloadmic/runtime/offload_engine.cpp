@@ -45,6 +45,9 @@ const char* Engine::m_func_names[Engine::c_funcs_total] =
     "server_myoinit",
     "server_myofini",
 #endif // MYO_SUPPORT
+#ifdef GET_DEVICE_SYMBOL_ADDRESS_SUPPORT
+    "server_get_symbol_address",
+#endif // GET_DEVICE_SYMBOL_ADDRESS_SUPPORT
     "server_init",
     "server_var_table_size",
     "server_var_table_copy"
@@ -139,7 +142,7 @@ void Engine::init_process(void)
 
     OFFLOAD_DEBUG_TRACE(2,
         "Loading target executable \"%s\" from %p, size %lld\n",
-        __target_exe->name, __target_exe->data, __target_exe->size);
+        __target_exe->name, __target_exe->data, (unsigned long long)__target_exe->size);
 
     res = COI::ProcessCreateFromMemory(
         engine,                 // in_Engine
@@ -252,6 +255,30 @@ void Engine::load_libraries()
     }
     m_images.clear();
 }
+
+#ifdef GET_DEVICE_SYMBOL_ADDRESS_SUPPORT
+void* Engine::get_symbol_address(const char* name)
+{
+    // TODO Only supports functions for now.
+    COIRESULT res;
+    COIEVENT event;
+
+    OFFLOAD_DEBUG_TRACE_1(2, 0, c_offload_get_symbol_address,
+                          "Querying device address of function %s\n",
+                           name);
+
+    void* address = NULL;
+    res = COI::PipelineRunFunction(get_pipeline(),
+                                   m_funcs[c_func_get_symbol_address],
+                                   0, 0, 0, 0, 0,
+                                   name, strlen(name) + 1,
+                                   &address, sizeof(address),
+                                   &event);
+    check_result(res, c_pipeline_run_func, m_index, res);
+    
+    return address;
+}
+#endif // GET_DEVICE_SYMBOL_ADDRESS_SUPPORT
 
 static bool target_entry_cmp(
     const VarList::BufEntry &l,

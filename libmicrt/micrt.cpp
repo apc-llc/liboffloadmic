@@ -1,6 +1,7 @@
 #include <libgomp/libgomp-plugin.h> // addr_pair
 #include <mic_runtime.h>
 #include <pthread.h>
+#include <string.h>
 
 // As in CUDA, different devices can be binded
 // to different host threads.
@@ -124,12 +125,9 @@ extern "C"
 		return micSuccess;
 	}
 
-static void* func = NULL;
-	
 	// Load the specified ELF image containing device functions.
 	micError_t micRegisterModule(unsigned char* image, size_t size)
 	{
-		void * GOMP_OFFLOAD_host2dev (int device, void *tgt_ptr, const void *host_ptr, size_t size);
 		int GOMP_OFFLOAD_load_image (int device, void *target_image, addr_pair **result);
 
 		if (!image)
@@ -145,39 +143,24 @@ static void* func = NULL;
 		void* im_start_end[2];
 		im_start_end[0] = (void*)image;
 		im_start_end[1] = (void*)(image + size);
-		int sztable = GOMP_OFFLOAD_load_image(currentDevice, im_start_end, &table);
-		
-		for (int i = 0; i < sztable / sizeof(void*); i++)
-			printf("%p %p\n", (void*)(table[i].start), (void*)(table[i].end));
-		
-		func = (void*)(table[0].start);
+		GOMP_OFFLOAD_load_image(currentDevice, im_start_end, &table);
 		
 		return micSuccess;
 	}
 
-	micError_t micLaunchKernel(const char *funcname, /*dim3 gridDim, dim3 blockDim,*/ void *args)
+	micError_t micLaunchKernel(const char *funcname, void *args)
 	{
 		void GOMP_OFFLOAD_run (int device, void *tgt_fn, void *tgt_vars);
 
-		if (!func)
-			return micErrorInvalidDeviceFunction;
+		if (!funcname)
+			return micErrorInvalidSymbol;
+
+		void* func = NULL;
+		micGetSymbolAddress(&func, funcname);
+		
+		// TODO cache resolved functions in table
 		
 		GOMP_OFFLOAD_run (currentDevice, func, args);
-		
-		/*if ((gridDim.x == 0) || (gridDim.y == 0) || (gridDim.z == 0))
-			return micErrorInvalidConfiguration;
-
-		if ((blockDim.x == 0) || (blockDim.y == 0) || (blockDim.z == 0))
-			return micErrorInvalidConfiguration;*/
-		
-		// TODO Load target image with the requested function.
-		//addr_pair *result = NULL;
-		//GOMP_OFFLOAD_load_image(currentDevice, image, &result);
-
-		// micErrorLaunchFailure
-		// micErrorLaunchTimeout
-		// micErrorLaunchOutOfResources
-		// micErrorSharedObjectInitFailed
 		
 		return micSuccess;
 	}
@@ -185,6 +168,21 @@ static void* func = NULL;
 	micError_t micDeviceSynchronize()
 	{
 		// TODO
+	}
+
+	micError_t micGetSymbolAddress(void** devPtr, const char* symbol)
+	{
+		void* __offload_get_symbol_address(int device, const char* name);
+
+		if (!devPtr)
+			return micErrorInvalidHostPointer;
+
+		if (!symbol || !strcmp(symbol, ""))
+			return micErrorInvalidSymbol;
+		
+		*devPtr = __offload_get_symbol_address(currentDevice, symbol);
+		
+		return micSuccess;
 	}
 }
 

@@ -58,6 +58,9 @@ enum OffloadTraceStage {
     c_offload_unregister,
     c_offload_destroy,
     c_offload_finish,
+#ifdef GET_DEVICE_SYMBOL_ADDRESS_SUPPORT
+    c_offload_get_symbol_address,
+#endif // GET_DEVICE_SYMBOL_ADDRESS_SUPPORT
     c_offload_myoinit,
     c_offload_myoregister,
     c_offload_mic_myo_shared,

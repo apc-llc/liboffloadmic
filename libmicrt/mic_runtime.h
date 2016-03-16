@@ -127,9 +127,11 @@ struct dim3
 
 typedef struct dim3 dim3;
 
-micError_t micLaunchKernel(const char *func, /*dim3 gridDim, dim3 blockDim,*/ void *args);
+micError_t micLaunchKernel(const char *funcname, void *args);
 
 micError_t micDeviceSynchronize();
+
+micError_t micGetSymbolAddress(void** devPtr, const char* symbol);
 
 #if defined(__cplusplus)
 }

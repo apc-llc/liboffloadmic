@@ -411,6 +411,10 @@ struct Engine {
     // list of stacks active at the engine
     PersistDataList m_persist_list;
 
+#ifdef GET_DEVICE_SYMBOL_ADDRESS_SUPPORT
+    void* get_symbol_address(const char* name);
+#endif // GET_DEVICE_SYMBOL_ADDRESS_SUPPORT
+
 private:
     Engine() : m_index(-1), m_physical_index(-1), m_process(0), m_ready(false),
                m_proc_number(0)
@@ -484,6 +488,9 @@ private:
         c_func_myo_init,
         c_func_myo_fini,
 #endif // MYO_SUPPORT
+#ifdef GET_DEVICE_SYMBOL_ADDRESS_SUPPORT
+        c_func_get_symbol_address,
+#endif // GET_DEVICE_SYMBOL_ADDRESS_SUPPORT
         c_func_init,
         c_func_var_table_size,
         c_func_var_table_copy,

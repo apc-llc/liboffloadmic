@@ -4393,3 +4393,11 @@ void __dbg_target_so_loaded()
 void __dbg_target_so_unloaded()
 {
 }
+
+#ifdef GET_DEVICE_SYMBOL_ADDRESS_SUPPORT
+extern "C" void* __offload_get_symbol_address(int device, const char* name)
+{
+  return mic_engines[device].get_symbol_address(name);
+}
+#endif // GET_DEVICE_SYMBOL_ADDRESS_SUPPORT
+

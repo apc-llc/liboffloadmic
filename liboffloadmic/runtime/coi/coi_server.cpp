@@ -118,6 +118,24 @@ void server_var_table_copy(
     __offload_vars.table_copy(buffers[0], *static_cast<int64_t*>(misc_data));
 }
 
+#ifdef GET_DEVICE_SYMBOL_ADDRESS_SUPPORT
+COINATIVELIBEXPORT
+void server_get_symbol_address(
+    uint32_t  buffer_count,
+    void**    buffers,
+    uint64_t* buffers_len,
+    void*     misc_data,
+    uint16_t  misc_data_len,
+    void*     return_data,
+    uint16_t  return_data_len
+)
+{
+	char* name = (char*)misc_data;
+	void** address = (void**)return_data;
+	*address = dlsym (RTLD_DEFAULT, name);
+}
+#endif // GET_DEVICE_SYMBOL_ADDRESS_SUPPORT
+
 #ifdef MYO_SUPPORT
 // temporary workaround for blocking behavior of myoiLibInit/Fini calls
 COINATIVELIBEXPORT
