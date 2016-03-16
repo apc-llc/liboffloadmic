@@ -4302,14 +4302,7 @@ extern "C" void __offload_register_image(const void *target_image)
 
 extern "C" void __offload_unregister_image(const void *target_image)
 {
-    // Target image is packed as follows:
-    //      8 bytes                - size of the target binary
-    //      null-terminated string - binary name
-    //      <size> bytes           - binary contents
-    const struct Image {
-         int64_t size;
-         char data[];
-    } *image = static_cast<const struct Image*>(target_image);
+    const struct Image *image = static_cast<const struct Image*>(target_image);
 
     // decode image
     const char *name = image->data;
