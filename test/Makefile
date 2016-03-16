@@ -13,7 +13,7 @@ test: test.o kernel_embed_mic.o
 	$(LOAD_GCC_MODULE) && $(HOST_CC) $(HOST_CFLAGS) $^ -o $@ -L$(INSTALL_PREFIX)/host/lib/$(TOOLEXECLIBDIR) -lmicrt -Wl,-rpath=$(INSTALL_PREFIX)/host/lib/$(TOOLEXECLIBDIR)
 
 test.o: test.c ../install/host/include/mic_runtime.h
-	$(LOAD_GCC_MODULE) && $(HOST_CC) $(HOST_CFLAGS) -I$(INSTALL_PREFIX)/host/include -c $< -o $@
+	$(LOAD_GCC_MODULE) && $(HOST_CC) $(HOST_CFLAGS) -std=c99 -I$(INSTALL_PREFIX)/host/include -c $< -o $@
 
 kernel_embed_mic.o: kernel_embed.o
 	objcopy --rename-section .data=.mic --keep-file-symbols $< $@

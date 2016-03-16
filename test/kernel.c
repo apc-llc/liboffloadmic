@@ -1,7 +1,18 @@
-void saxpy(float a, float* x, float* y, int n)
+void saxpy(void* vargs)
 {
-	for (int i = 0; i < n; i++)
-		y[i] += a * x[i];
+	typedef struct
+	{
+		int n;
+		float a;
+		float* x;
+		float* y;
+	}
+	Args;
+
+	Args* args = (Args*)vargs;
+
+	for (int i = 0; i < args->n; i++)
+		args->y[i] += args->a * args->x[i];
 }
 
 void target_register_lib (const void *);

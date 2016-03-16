@@ -127,7 +127,7 @@ struct dim3
 
 typedef struct dim3 dim3;
 
-micError_t micLaunchKernel(const char *func, /*dim3 gridDim, dim3 blockDim,*/ void **args);
+micError_t micLaunchKernel(const char *func, /*dim3 gridDim, dim3 blockDim,*/ void *args);
 
 #if defined(__cplusplus)
 }

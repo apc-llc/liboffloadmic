@@ -20,6 +20,7 @@ extern "C"
 	void * GOMP_OFFLOAD_host2dev (int device, void *tgt_ptr, const void *host_ptr, size_t size);
 	void * GOMP_OFFLOAD_dev2host (int device, void *host_ptr, const void *tgt_ptr, size_t size);
 	int GOMP_OFFLOAD_load_image (int device, void *target_image, addr_pair **result);
+	void GOMP_OFFLOAD_run (int device, void *tgt_fn, void *tgt_vars);
 
 	__attribute__((constructor)) static void initialize()
 	{
@@ -119,6 +120,8 @@ extern "C"
 		
 		return micSuccess;
 	}
+
+static void* func = NULL;
 	
 	// Load the specified ELF image containing device functions.
 	micError_t micRegisterModule(unsigned char* image, size_t size)
@@ -141,13 +144,17 @@ extern "C"
 		for (int i = 0; i < sztable / sizeof(void*); i++)
 			printf("%p %p\n", (void*)(table[i].start), (void*)(table[i].end));
 		
+		func = (void*)(table[0].start);
+		
 		return micSuccess;
 	}
 
-	micError_t micLaunchKernel(const char *func, /*dim3 gridDim, dim3 blockDim,*/ void **args)
+	micError_t micLaunchKernel(const char *funcname, /*dim3 gridDim, dim3 blockDim,*/ void *args)
 	{
 		if (!func)
 			return micErrorInvalidDeviceFunction;
+		
+		GOMP_OFFLOAD_run (currentDevice, func, args);
 		
 		/*if ((gridDim.x == 0) || (gridDim.y == 0) || (gridDim.z == 0))
 			return micErrorInvalidConfiguration;
@@ -165,7 +172,9 @@ extern "C"
 		// micErrorLaunchFailure
 		// micErrorLaunchTimeout
 		// micErrorLaunchOutOfResources
-		// micErrorSharedObjectInitFailed		
+		// micErrorSharedObjectInitFailed
+		
+		return micSuccess;
 	}
 }
 
