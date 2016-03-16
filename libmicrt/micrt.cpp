@@ -1,7 +1,12 @@
 #include <libgomp/libgomp-plugin.h> // addr_pair
+#include <map>
 #include <mic_runtime.h>
 #include <pthread.h>
+#include <string>
 #include <string.h>
+#include <vector>
+
+using namespace std;
 
 // As in CUDA, different devices can be binded
 // to different host threads.
@@ -9,11 +14,26 @@ static __thread int currentDevice = 0;
 
 static bool initialized = false;
 
+// Tables of symbols addresses for each device.
+static vector<map<string, void*> >* symtabs;
+
+// Locks to access symbols tables of single device
+// from multiple threads.
+static vector<pthread_mutex_t>* locks;
+
 extern "C"
 {
 	__attribute__((constructor)) static void initialize()
 	{
 		void GOMP_OFFLOAD_init_device (int device);
+
+		// Must be static locals here, otherwise constructors
+		// for global statics could be called later than this
+		// function call, unexpectedly reinitializing the variables.
+		static vector<map<string, void*> > _symtabs;
+		symtabs = &_symtabs;
+		static vector<pthread_mutex_t> _locks;
+		locks = &_locks;
 
 		static pthread_mutex_t lock = PTHREAD_MUTEX_INITIALIZER;
 
@@ -27,6 +47,12 @@ extern "C"
 			// sets up image on all devices, presuming they are initialized.
 			for (int i = 0; i < count; i++)
 				GOMP_OFFLOAD_init_device(i);
+
+			// Set sizes for symbols tables and locks.
+			symtabs->resize(count);
+			locks->resize(count);
+			for (int i = 0; i < count; i++)
+				pthread_mutex_init(&(*locks)[i], NULL);
 
 			initialized = true;
 		}
@@ -171,7 +197,7 @@ extern "C"
 	}
 
 	micError_t micGetSymbolAddress(void** devPtr, const char* symbol)
-	{
+	{		
 		void* __offload_get_symbol_address(int device, const char* name);
 
 		if (!devPtr)
@@ -179,8 +205,19 @@ extern "C"
 
 		if (!symbol || !strcmp(symbol, ""))
 			return micErrorInvalidSymbol;
-		
-		*devPtr = __offload_get_symbol_address(currentDevice, symbol);
+
+		pthread_mutex_lock(&(*locks)[currentDevice]);
+
+		map<string, void*>::iterator i = (*symtabs)[currentDevice].find(symbol);
+		if (i != (*symtabs)[currentDevice].end())
+			*devPtr = i->second;
+		else
+		{
+			*devPtr = __offload_get_symbol_address(currentDevice, symbol);
+			(*symtabs)[currentDevice][symbol] = *devPtr;
+		}
+
+		pthread_mutex_unlock(&(*locks)[currentDevice]);
 		
 		return micSuccess;
 	}
