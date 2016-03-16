@@ -1,4 +1,5 @@
 #include <malloc.h>
+#include <math.h>
 #include <mic_runtime.h>
 #include <stdlib.h>
 #include <string.h>
@@ -63,9 +64,9 @@ int main(int argc, char* argv[])
 	// Check results.
 	int mismatch = 0;
 	for (int i = 0; i < host_args.n; i++)
-		if (host_y_result[i] != host_args.a * host_x[i] + host_y[i])
+		if (fabsf(host_y_result[i] - (host_args.a * host_x[i] + host_y[i])) > 1e-6)
 		{
-			printf("Results mismatch @ i = %d: %f != %f\n", i,
+			printf("Results mismatch @ i = %d: %e != %e\n", i,
 				host_y_result[i], host_args.a * host_x[i] + host_y[i]);
 			mismatch = 1;
 			break;
