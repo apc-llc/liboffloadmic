@@ -182,7 +182,9 @@ extern "C"
 			return micErrorInvalidSymbol;
 
 		void* func = NULL;
-		micGetSymbolAddress(&func, funcname);
+		micError_t result = micGetSymbolAddress(&func, funcname);
+		if (result != micSuccess)
+			return result;
 		
 		// TODO cache resolved functions in table
 		
@@ -214,6 +216,8 @@ extern "C"
 		else
 		{
 			*devPtr = __offload_get_symbol_address(currentDevice, symbol);
+			if (!*devPtr)
+				return micErrorSharedObjectSymbolNotFound;
 			(*symtabs)[currentDevice][symbol] = *devPtr;
 		}
 
