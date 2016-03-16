@@ -9,7 +9,7 @@ include Makefile.inc
 
 all: $(LIBOFFLOADMIC_HOST) install/host/lib/$(TOOLEXECLIBDIR)/libmicrt.so install/host/include/mic_runtime.h
 
-$(TARGET_LIB_PATH)/libintrinsics.so: intrinsics/build_target/intrinsics.o
+$(TARGET_LIB_PATH)/libintrinsics.a: intrinsics/build_target/intrinsics.o
 	$(LOAD_GCC_MODULE) && mkdir -p $(TARGET_LIB_PATH) && ar rcs $@ $<
 
 intrinsics/build_target/intrinsics.o: intrinsics/intrinsics.c
