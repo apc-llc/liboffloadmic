@@ -55,7 +55,7 @@ int main(int argc, char* argv[])
 	MIC_ERROR_CHECK(micMemcpy(device_args, &host_args, sizeof(Args), micMemcpyHostToDevice));
 
 	MIC_ERROR_CHECK(micLaunchKernel("saxpy", device_args));
-	// TODO MIC_ERROR_CHECK(micDeviceSynchronize());
+	MIC_ERROR_CHECK(micDeviceSynchronize());
 
 	float* host_y_result = (float*)malloc(host_args.n * sizeof(float));
 	MIC_ERROR_CHECK(micMemcpy(host_y_result, device_y, host_args.n * sizeof(float), micMemcpyDeviceToHost));

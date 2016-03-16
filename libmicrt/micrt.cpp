@@ -6,24 +6,16 @@
 // to different host threads.
 static __thread int currentDevice = 0;
 
-static pthread_mutex_t lock = PTHREAD_MUTEX_INITIALIZER;
-
 static bool initialized = false;
 
 extern "C"
 {
-	const char * GOMP_OFFLOAD_get_name (void);
-	int GOMP_OFFLOAD_get_num_devices (void);
-	void GOMP_OFFLOAD_init_device (int device);
-	void * GOMP_OFFLOAD_alloc (int device, size_t size);
-	void GOMP_OFFLOAD_free (int device, void *tgt_ptr);
-	void * GOMP_OFFLOAD_host2dev (int device, void *tgt_ptr, const void *host_ptr, size_t size);
-	void * GOMP_OFFLOAD_dev2host (int device, void *host_ptr, const void *tgt_ptr, size_t size);
-	int GOMP_OFFLOAD_load_image (int device, void *target_image, addr_pair **result);
-	void GOMP_OFFLOAD_run (int device, void *tgt_fn, void *tgt_vars);
-
 	__attribute__((constructor)) static void initialize()
 	{
+		void GOMP_OFFLOAD_init_device (int device);
+
+		static pthread_mutex_t lock = PTHREAD_MUTEX_INITIALIZER;
+
 		pthread_mutex_lock(&lock);
 		if (!initialized)
 		{
@@ -43,6 +35,8 @@ extern "C"
 	// Return the name of the accelerator platform
 	micError_t micGetPlatformName(const char** name)
 	{
+		const char * GOMP_OFFLOAD_get_name (void);
+
 		if (!name)
 			return micErrorInvalidHostPointer;
 		
@@ -53,6 +47,8 @@ extern "C"
 
 	micError_t micGetDeviceCount(int* count)
 	{
+		int GOMP_OFFLOAD_get_num_devices (void);
+
 		if (!count)
 			return micErrorInvalidHostPointer;
 	
@@ -76,6 +72,8 @@ extern "C"
 
 	micError_t micMalloc(void** devPtr, size_t size)
 	{
+		void * GOMP_OFFLOAD_alloc (int device, size_t size);
+
 		if (!devPtr)
 			return micErrorInvalidDevicePointer;
 
@@ -89,6 +87,8 @@ extern "C"
 
 	micError_t micFree(void* devPtr)
 	{
+		void GOMP_OFFLOAD_free (int device, void *tgt_ptr);
+
 		if (!devPtr)
 			return micErrorInvalidDevicePointer;
 	
@@ -99,6 +99,9 @@ extern "C"
 
 	micError_t micMemcpy(void* dst, const void* src, size_t size, micMemcpyKind kind)
 	{
+		void * GOMP_OFFLOAD_host2dev (int device, void *tgt_ptr, const void *host_ptr, size_t size);
+		void * GOMP_OFFLOAD_dev2host (int device, void *host_ptr, const void *tgt_ptr, size_t size);
+
 		if (kind == micMemcpyHostToDevice)
 		{
 			if (!dst)
@@ -126,6 +129,9 @@ static void* func = NULL;
 	// Load the specified ELF image containing device functions.
 	micError_t micRegisterModule(unsigned char* image, size_t size)
 	{
+		void * GOMP_OFFLOAD_host2dev (int device, void *tgt_ptr, const void *host_ptr, size_t size);
+		int GOMP_OFFLOAD_load_image (int device, void *target_image, addr_pair **result);
+
 		if (!image)
 			return micErrorInvalidValue;
 	
@@ -151,6 +157,8 @@ static void* func = NULL;
 
 	micError_t micLaunchKernel(const char *funcname, /*dim3 gridDim, dim3 blockDim,*/ void *args)
 	{
+		void GOMP_OFFLOAD_run (int device, void *tgt_fn, void *tgt_vars);
+
 		if (!func)
 			return micErrorInvalidDeviceFunction;
 		
@@ -166,15 +174,17 @@ static void* func = NULL;
 		//addr_pair *result = NULL;
 		//GOMP_OFFLOAD_load_image(currentDevice, image, &result);
 
-		// TODO run function		
-		//GOMP_OFFLOAD_run(currentDevice, void *tgt_fn, void *tgt_vars);
-
 		// micErrorLaunchFailure
 		// micErrorLaunchTimeout
 		// micErrorLaunchOutOfResources
 		// micErrorSharedObjectInitFailed
 		
 		return micSuccess;
+	}
+
+	micError_t micDeviceSynchronize()
+	{
+		// TODO
 	}
 }
 

@@ -129,6 +129,8 @@ typedef struct dim3 dim3;
 
 micError_t micLaunchKernel(const char *func, /*dim3 gridDim, dim3 blockDim,*/ void *args);
 
+micError_t micDeviceSynchronize();
+
 #if defined(__cplusplus)
 }
 #endif /* __cplusplus */
