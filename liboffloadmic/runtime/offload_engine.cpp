@@ -275,7 +275,10 @@ void* Engine::get_symbol_address(const char* name)
                                    &address, sizeof(address),
                                    &event);
     check_result(res, c_pipeline_run_func, m_index, res);
-    
+
+    res = COI::EventWait(1, &event, -1, 1, 0, 0);
+    check_result(res, c_event_wait, res);
+
     return address;
 }
 #endif // GET_DEVICE_SYMBOL_ADDRESS_SUPPORT
