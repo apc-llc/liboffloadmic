@@ -3,16 +3,16 @@
 # Anselm cluster http://www.it4i.cz/
 #
 
-LOCATION = ..
+LOCATION = ../..
 
-include ../Makefile.inc
+include $(LOCATION)/Makefile.inc
 
 all: test
 
 test: test.o kernel_embed_mic.o
 	$(LOAD_GCC_MODULE) && $(HOST_CC) $(HOST_CFLAGS) $^ -o $@ -L$(INSTALL_PREFIX)/host/lib/$(TOOLEXECLIBDIR) -lmicrt -Wl,-rpath=$(INSTALL_PREFIX)/host/lib/$(TOOLEXECLIBDIR)
 
-test.o: test.c ../install/host/include/mic_runtime.h
+test.o: test.c $(LOCATION)/install/host/include/mic_runtime.h
 	$(LOAD_GCC_MODULE) && $(HOST_CC) $(HOST_CFLAGS) -std=c99 -I$(INSTALL_PREFIX)/host/include -c $< -o $@
 
 kernel_embed_mic.o: kernel_embed.o
