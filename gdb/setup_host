@@ -1,0 +1,3 @@
+#!/bin/bash
+
+SINK_LD_LIBRARY_PATH=:${HOME}/liboffloadmic/test/../install/target/lib/../lib64 gdb -iex "file ./test" -iex "break micLaunchKernel" -iex "run"

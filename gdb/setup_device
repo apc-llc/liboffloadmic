@@ -1,0 +1,44 @@
+#!/usr/bin/perl
+
+my($device) = "mic0";
+my($sysroot) = "/opt/mpss/3.4.3/sysroots/k1om-mpss-linux/";
+my($file_local) = "offload_target_main";
+
+my($file) = "";
+my($offload_target_main) = `ssh -t $device ps aux 2>/dev/null | grep $file_local`;
+if ($offload_target_main !~ m/micuser\s+(?<PID>(\d+)).*\s(?<FILE>(\/(\w|\d|\/)+))/)
+{
+	print "Cannot find offload_target_main process on $device:\n$offload_target_main\n";
+	exit(1);
+}
+my($pid) = $+{PID};
+my($file) = $+{FILE};
+my($file_tmp) = "/tmp/$file_local";
+
+print "Found $file (pid = $pid)\n";
+
+my($cmd) = "micnativeloadex $sysroot/bin/cp -a \"-rf $file $file_tmp\"";
+print "$cmd\n";
+`$cmd`;
+$cmd = "micnativeloadex $sysroot/bin/chmod -a \"777 $file_tmp\"";
+print "$cmd\n";
+`$cmd`;
+$cmd = "scp mic0:$file_tmp .";
+print "$cmd\n";
+`$cmd`;
+
+if (!-e "./$file_local")
+{
+	print "Cannot copy $file from $device:\n$log\n";
+	exit(1);
+}
+
+print "Successfully copied $file to the current folder\n";
+
+system("micnativeloadex /apps/intel/composer_xe_2015.3.187/debugger/gdb/target/mic/bin/gdbserver -a \"--multi :2000\" &");
+
+system("module load python && export PYTHONHOME=/apps/tools/python/2.7.5 && SINK_LD_LIBRARY_PATH=:${HOME}/liboffloadmic/test/../install/target/lib/../lib64 /apps/intel/composer_xe_2015.3.187/debugger/gdb/intel64_mic/bin/gdb-mic -iex \"target extended-remote mic0:2000\" -iex \"set sysroot $sysroot\" -iex \"set solib-search-path ${HOME}/liboffloadmic/install/target/lib64/\" -iex \"file $file_local\" -iex \"attach $pid\"");
+
+system("killall -9 micnativeloadex");
+
+
