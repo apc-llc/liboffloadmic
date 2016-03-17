@@ -1,8 +1,29 @@
 #include <omp.h>
 #include <stdio.h>
+#include <tbb/parallel_for.h>
+#include <tbb/task_scheduler_init.h>
 
-void saxpy(void* vargs)
+using namespace tbb;
+
+struct saxpy_func
 {
+	float a;
+	float* x;
+	float* y;
+
+	saxpy_func(float a_, float* x_, float* y_) : a(a_), x(x_), y(y_) { }
+
+	void operator()(const blocked_range<int>& range) const
+	{
+		for (int i = range.begin(); i != range.end(); i++)
+			y[i] += a * x[i];
+	}
+};
+
+extern "C" void saxpy(void* vargs)
+{
+	static task_scheduler_init init;
+
 	typedef struct
 	{
 		int n;
@@ -14,16 +35,7 @@ void saxpy(void* vargs)
 
 	Args* args = (Args*)vargs;
 
-	#pragma omp parallel for
-	for (int i = 0; i < args->n; i++)
-		args->y[i] += args->a * args->x[i];
-
-	#pragma omp parallel
-	{
-		#pragma omp master
-		{
-			printf("Using %d threads\n", omp_get_num_threads());
-		}
-	}
+	saxpy_func func(args->a, args->x, args->y);
+	parallel_for(blocked_range<int>(0, args->n), func);
 }
 

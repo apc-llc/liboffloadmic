@@ -24,8 +24,8 @@ kernel_embed.o: kernel_embed.c kernel_embed.h
 kernel_embed.h: libkernel.so
 	xxd -include $< >$@
 
-libkernel.so: kernel.c
-	$(MIC_CC) $(MIC_CFLAGS) -std=c99 -fPIC -fopenmp -shared $< -o $@
+libkernel.so: kernel.cpp
+	$(MIC_CXX) $(MIC_CXXFLAGS) -fPIC -shared $< -o $@ -I../../tbb/include/ -L../../tbb/build/linux_release -ltbb -ltbbmalloc
 
 ifeq (native,$(target))
 run: test
