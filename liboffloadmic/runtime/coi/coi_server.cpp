@@ -130,9 +130,20 @@ void server_get_symbol_address(
     uint16_t  return_data_len
 )
 {
-	char* name = (char*)misc_data;
-	void** address = (void**)return_data;
-	*address = dlsym (RTLD_DEFAULT, name);
+    char* name = (char*)misc_data;
+    void** address = (void**)return_data;
+
+    // Call to cleanup previous error.
+    dlerror();
+
+    *address = dlsym (RTLD_DEFAULT, name);
+
+    char* error = dlerror();
+    if (error)
+    {
+        fprintf(stderr, "Cannot find symbol %s: %s\n", name, error);
+        fflush(stderr);
+    }
 }
 #endif // GET_DEVICE_SYMBOL_ADDRESS_SUPPORT
 
