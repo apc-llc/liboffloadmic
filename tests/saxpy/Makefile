@@ -25,7 +25,7 @@ kernel_embed.h: libkernel.so
 	xxd -include $< >$@
 
 libkernel.so: kernel.c
-	$(MIC_CC) $(MIC_CFLAGS) -std=c99 -fPIC -shared $< -o $@
+	$(MIC_CC) $(MIC_CFLAGS) -std=c99 -fPIC -fopenmp -shared $< -o $@
 
 ifeq (native,$(target))
 run: test
