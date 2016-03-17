@@ -59,6 +59,5 @@ clean:
 	rm -rf liboffloadmic/build_target && \
 	rm -rf liboffloadmic/build_host && \
 	rm -rf libgomp/build_target && \
-	rm -rf libgomp/build_host && \
-	cd test && $(MAKE) clean
+	rm -rf libgomp/build_host
 
