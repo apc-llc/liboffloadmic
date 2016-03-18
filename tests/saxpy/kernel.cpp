@@ -1,4 +1,6 @@
-#include <omp.h>
+unsigned long long _rdtsc(void);
+void _mm_delay_32(unsigned int val);
+
 #include <stdio.h>
 #include <tbb/parallel_for.h>
 #include <tbb/task_scheduler_init.h>
@@ -37,5 +39,8 @@ extern "C" void saxpy(void* vargs)
 
 	saxpy_func func(args->a, args->x, args->y);
 	parallel_for(blocked_range<int>(0, args->n), func);
+
+	printf("num_threads = %d\n", init.default_num_threads());
+	fflush(stdout);
 }
 
