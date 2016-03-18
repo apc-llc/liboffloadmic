@@ -11,10 +11,10 @@ all: test
 
 ifeq (native,$(target))
 ../../tbb/build/linux_release/libtbb.so:
-	cd ../../tbb/ && make offload=mic compiler=icc -j12 && ln -s mic_icc_release build/linux_release
+	cd ../../tbb/ && make offload=mic compiler=icc -j12 && cd build && ln -sf mic_icc_release linux_release
 else
 ../../tbb/build/linux_release/libtbb.so:
-	cd ../../tbb/ && make -j12 && ln -s linux_intel64_gcc_*_release build/linux_release
+	cd ../../tbb/ && make -j12 && cd build && ln -sf `find . -name "linux_intel64_gcc_*_release"` linux_release
 endif
 
 test: test.o kernel_embed_mic.o
