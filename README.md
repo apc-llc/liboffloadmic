@@ -27,6 +27,8 @@ micError_t micLaunchKernel(const char *funcname, void *args);
 ```
 $ git clone https://github.com/apc-llc/liboffloadmic.git
 $ cd liboffloadmic
+$ git submodule init
+$ git submodule update
 $ make target=native
 ```
 
@@ -35,6 +37,8 @@ $ make target=native
 ```
 $ git clone https://github.com/apc-llc/liboffloadmic.git
 $ cd liboffloadmic
+$ git submodule init
+$ git submodule update
 $ make target=emul
 ```
 
