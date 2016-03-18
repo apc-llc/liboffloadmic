@@ -40,6 +40,8 @@ $ make target=emul
 
 ### Testing
 
+Host emulation:
+
 ```
 $ cd liboffloadmic/test
 $ make
@@ -47,6 +49,20 @@ $ make run
 LD_LIBRARY_PATH=:/home/marcusmae/apc/liboffloadmic/test/../install/target/lib/../lib ./test
 CUDA-like runtime API powered by GOMP backend for intelmic
 1 intelmic device(s) available
+num_threads = 8
+Result is correct
+```
+
+Xeon Phi 5110P:
+
+```
+$ cd liboffloadmic/test
+$ make
+$ make run
+SINK_LD_LIBRARY_PATH=:/home_lustre/dmikushin/liboffloadmic/tests/saxpy/../../install/target/lib/../lib64:/home_lustre/dmikushin/liboffloadmic/tests/saxpy/../../install/../tbb/build/linux_release ./test
+CUDA-like runtime API powered by GOMP backend for intelmic
+1 intelmic device(s) available
+num_threads = 236
 Result is correct
 ```
 
