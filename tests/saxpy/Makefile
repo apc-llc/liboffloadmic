@@ -20,7 +20,7 @@ endif
 test: test.o kernel_embed.o
 	$(LOAD_GCC_MODULE) && $(HOST_CC) $(HOST_CFLAGS) $^ -o $@ -L$(INSTALL_PREFIX)/host/lib/$(TOOLEXECLIBDIR) -lmicrt -Wl,-rpath=$(INSTALL_PREFIX)/host/lib/$(TOOLEXECLIBDIR)
 
-test.o: test.c $(LOCATION)/install/host/include/mic_runtime.h
+test.o: test.c $(INSTALL_PREFIX)/host/include/mic_runtime.h
 	$(LOAD_GCC_MODULE) && $(HOST_CC) $(HOST_CFLAGS) -std=c99 -I$(INSTALL_PREFIX)/host/include -c $< -o $@
 
 kernel_embed.o: kernel_embed.c kernel_embed.h
