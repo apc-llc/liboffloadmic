@@ -5,7 +5,7 @@
 
 include Makefile.inc
 
-all: $(LIBOFFLOADMIC_HOST) install/host/lib/$(TOOLEXECLIBDIR)/libmicrt.so install/host/include/mic_runtime.h
+all: $(LIBOFFLOADMIC_HOST) $(INSTALL_PREFIX)/host/lib/$(TOOLEXECLIBDIR)/libmicrt.so $(INSTALL_PREFIX)/host/include/mic_runtime.h
 
 $(TARGET_LIB_PATH)/libintrinsics.a: intrinsics/build_target/intrinsics.o
 	$(LOAD_GCC_MODULE) && mkdir -p $(TARGET_LIB_PATH) && ar rcs $@ $<
@@ -43,11 +43,11 @@ $(LIBOFFLOADMIC_HOST): $(DEPENDS_ON_INTRINSICS_OR_NOT)
 	cd ../.. && \
 	$(REMOVE_LIBCOI_HOST)
 
-install/host/include/mic_runtime.h: libmicrt/mic_runtime.h
-	mkdir -p install/host/include && cp $< $@
+$(INSTALL_PREFIX)/host/include/mic_runtime.h: libmicrt/mic_runtime.h
+	mkdir -p $(INSTALL_PREFIX)/host/include && cp $< $@
 
-install/host/lib/$(TOOLEXECLIBDIR)/libmicrt.so: libmicrt/build_host/micrt.o $(LIBOFFLOADMIC_HOST)
-	$(LOAD_GCC_MODULE) && mkdir -p $(HOST_LIB_PATH) && $(HOST_CXX) $< -shared -o $@ -Linstall/host/lib/$(TOOLEXECLIBDIR) -Bstatic -lgomp-plugin-intelmic -loffloadmic_host -Bdynamic -lpthread
+$(INSTALL_PREFIX)/host/lib/$(TOOLEXECLIBDIR)/libmicrt.so: libmicrt/build_host/micrt.o $(LIBOFFLOADMIC_HOST)
+	$(LOAD_GCC_MODULE) && mkdir -p $(HOST_LIB_PATH) && $(HOST_CXX) $< -shared -o $@ -L$(INSTALL_PREFIX)/host/lib/$(TOOLEXECLIBDIR) -Bstatic -lgomp-plugin-intelmic -loffloadmic_host -Bdynamic -lpthread
 
 libmicrt/build_host/micrt.o: libmicrt/micrt.cpp libmicrt/mic_runtime.h
 	$(LOAD_GCC_MODULE) && mkdir -p libmicrt/build_host && $(HOST_CXX) $(HOST_CXXFLAGS) -I. -Ilibmicrt -c -fPIC $< -o $@
