@@ -34,10 +34,10 @@ libkernel.so: kernel.cpp ../../tbb/build/linux_release/libtbb.so
 
 ifeq (native,$(target))
 run: test
-	SINK_LD_LIBRARY_PATH=$(SINK_LD_LIBRARY_PATH):$(INSTALL_PREFIX)/target/lib/$(TOOLEXECLIBDIR):$(INSTALL_PREFIX)/../tbb/build/linux_release ./$<
+	SINK_LD_LIBRARY_PATH=$(SINK_LD_LIBRARY_PATH):$(INSTALL_PREFIX)/mic/lib/$(TOOLEXECLIBDIR):$(INSTALL_PREFIX)/../tbb/build/linux_release ./$<
 else
 run: test
-	LD_LIBRARY_PATH=$(LD_LIBRARY_PATH):$(INSTALL_PREFIX)/target/lib/$(TOOLEXECLIBDIR) ./$<
+	LD_LIBRARY_PATH=$(LD_LIBRARY_PATH):$(INSTALL_PREFIX)/mic/lib/$(TOOLEXECLIBDIR) ./$<
 endif
 
 clean:
