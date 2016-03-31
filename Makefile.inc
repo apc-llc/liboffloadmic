@@ -22,7 +22,7 @@ ifeq (server is down,$(shell ping -c1 -W1 mic0 2>/dev/null || echo 'server is do
 target := emulation
 else
 target := native
-REMOVE_LIBCOI_DEVICE := rm -rf $(INSTALL_PREFIX)/target/lib64/libcoi_device*
+REMOVE_LIBCOI_DEVICE := rm -rf $(INSTALL_PREFIX)/mic/lib64/libcoi_device*
 REMOVE_LIBCOI_HOST := rm -rf $(INSTALL_PREFIX)/host/lib64/libcoi_host*
 endif
 endif
@@ -40,13 +40,13 @@ MIC_CXX := $(HOST_CXX)
 endif
 
 HOST_LIB_PATH := $(INSTALL_PREFIX)/host/lib/$(shell $(MIC_CC) -print-multi-os-directory)
-HOST_CFLAGS := -I$(shell pwd)/$(LOCATION)/libgomp/runtime -I$(shell pwd)/$(LOCATION)/libgomp/include/coi -I$(shell pwd)/$(LOCATION)/liboffloadmic/build_target/plugin/ -g -O3 -gdwarf-3 -D_GNU_SOURCE -DLINUX -DGET_DEVICE_SYMBOL_ADDRESS_SUPPORT
+HOST_CFLAGS := -I$(shell pwd)/$(LOCATION)/libgomp/runtime -I$(shell pwd)/$(LOCATION)/libgomp/include/coi -I$(shell pwd)/$(LOCATION)/liboffloadmic/build_mic/plugin/ -g -O3 -gdwarf-3 -D_GNU_SOURCE -DLINUX -DGET_DEVICE_SYMBOL_ADDRESS_SUPPORT
 HOST_CXXFLAGS := $(HOST_CFLAGS)
 
-TARGET_LIB_PATH := $(INSTALL_PREFIX)/target/lib/$(shell $(MIC_CC) -print-multi-os-directory)
+TARGET_LIB_PATH := $(INSTALL_PREFIX)/mic/lib/$(shell $(MIC_CC) -print-multi-os-directory)
 ifeq (native,$(target))
 MIC_LIB := $(TARGET_LIB_PATH) -lintrinsics
-MIC_CFLAGS := $(HOST_CFLAGS) -I$(INSTALL_PREFIX)/target/lib/gcc/k1om-intelmic-linux-gnu/5.3.0/include -L$(MIC_LIB) -D__MIC__
+MIC_CFLAGS := $(HOST_CFLAGS) -I$(INSTALL_PREFIX)/mic/lib/gcc/k1om-intelmic-linux-gnu/5.3.0/include -L$(MIC_LIB) -D__MIC__
 MIC_CXXFLAGS := $(MIC_CFLAGS)
 else
 MIC_LIB := $(TARGET_LIB_PATH)

@@ -7,17 +7,17 @@ include Makefile.inc
 
 all: $(LIBOFFLOADMIC_HOST) $(INSTALL_PREFIX)/host/lib/$(TOOLEXECLIBDIR)/libmicrt.so $(INSTALL_PREFIX)/host/include/mic_runtime.h
 
-$(TARGET_LIB_PATH)/libintrinsics.a: intrinsics/build_target/intrinsics.o
+$(TARGET_LIB_PATH)/libintrinsics.a: intrinsics/build_mic/intrinsics.o
 	$(LOAD_GCC_MODULE) && mkdir -p $(TARGET_LIB_PATH) && ar rcs $@ $<
 
-intrinsics/build_target/intrinsics.o: intrinsics/intrinsics.c
-	$(LOAD_ICC_MODULE) && mkdir -p intrinsics/build_target && icc -mmic -c $< -o $@
+intrinsics/build_mic/intrinsics.o: intrinsics/intrinsics.c
+	$(LOAD_ICC_MODULE) && mkdir -p intrinsics/build_mic && icc -mmic -c $< -o $@
 
 $(LIBOFFLOADMIC_HOST): $(DEPENDS_ON_INTRINSICS_OR_NOT)
 	$(LOAD_GCC_MODULE) && cd libgomp && \
-	mkdir -p build_target && \
-	cd build_target && \
-	../configure --disable-multilib --build=x86_64-intelmic-linux-gnu --host=k1om-intelmic-linux-gnu --target=k1om-intelmic-linux-gnu CC="$(MIC_CC) $(MIC_CFLAGS)" CXX="$(MIC_CXX) $(MIC_CXXFLAGS)" --prefix=$(INSTALL_PREFIX)/target && \
+	mkdir -p build_mic && \
+	cd build_mic && \
+	../configure --disable-multilib --build=x86_64-intelmic-linux-gnu --host=k1om-intelmic-linux-gnu --target=k1om-intelmic-linux-gnu CC="$(MIC_CC) $(MIC_CFLAGS)" CXX="$(MIC_CXX) $(MIC_CXXFLAGS)" --prefix=$(INSTALL_PREFIX)/mic && \
 	make -j12 && \
 	make install && \
 	cd .. && \
@@ -28,9 +28,9 @@ $(LIBOFFLOADMIC_HOST): $(DEPENDS_ON_INTRINSICS_OR_NOT)
 	make install && \
 	cd ../.. && \
 	cd liboffloadmic && \
-	mkdir -p build_target && \
-	cd build_target && \
-	../configure --disable-multilib --build=x86_64-intelmic-linux-gnu --host=k1om-intelmic-linux-gnu --target=x86_64-intelmic-linux-gnu --enable-as-accelerator-for=x86_64-pc-linux-gnu --enable-liboffloadmic=target CC="$(MIC_CC) $(MIC_CFLAGS)" CXX="$(MIC_CXX) $(MIC_CXXFLAGS)" --prefix=$(INSTALL_PREFIX)/target && \
+	mkdir -p build_mic && \
+	cd build_mic && \
+	../configure --disable-multilib --build=x86_64-intelmic-linux-gnu --host=k1om-intelmic-linux-gnu --target=x86_64-intelmic-linux-gnu --enable-as-accelerator-for=x86_64-pc-linux-gnu --enable-liboffloadmic=target CC="$(MIC_CC) $(MIC_CFLAGS)" CXX="$(MIC_CXX) $(MIC_CXXFLAGS)" --prefix=$(INSTALL_PREFIX)/mic && \
 	make -j12 && \
 	make install && \
 	cd .. && \
@@ -54,10 +54,10 @@ libmicrt/build_host/micrt.o: libmicrt/micrt.cpp libmicrt/mic_runtime.h
 
 clean:
 	rm -rf install && \
-	rm -rf intrinsics/build_target && \
+	rm -rf intrinsics/build_mic && \
 	rm -rf libmicrt/build_host && \
-	rm -rf liboffloadmic/build_target && \
+	rm -rf liboffloadmic/build_mic && \
 	rm -rf liboffloadmic/build_host && \
-	rm -rf libgomp/build_target && \
+	rm -rf libgomp/build_mic && \
 	rm -rf libgomp/build_host
 
