@@ -17,14 +17,11 @@ else
 	$(LOAD_GCC_MODULE) && cd ../../tbb/ && make -j12 && cd build && ln -sf `find . -name "linux_intel64_gcc_*_release"` linux_release
 endif
 
-test: test.o kernel_embed_mic.o
+test: test.o kernel_embed.o
 	$(LOAD_GCC_MODULE) && $(HOST_CC) $(HOST_CFLAGS) $^ -o $@ -L$(INSTALL_PREFIX)/host/lib/$(TOOLEXECLIBDIR) -lmicrt -Wl,-rpath=$(INSTALL_PREFIX)/host/lib/$(TOOLEXECLIBDIR)
 
 test.o: test.c $(LOCATION)/install/host/include/mic_runtime.h
 	$(LOAD_GCC_MODULE) && $(HOST_CC) $(HOST_CFLAGS) -std=c99 -I$(INSTALL_PREFIX)/host/include -c $< -o $@
-
-kernel_embed_mic.o: kernel_embed.o
-	objcopy --rename-section .data=.mic --keep-file-symbols $< $@
 
 kernel_embed.o: kernel_embed.c kernel_embed.h
 	$(LOAD_GCC_MODULE) && $(HOST_CC) $(HOST_CFLAGS) -I. -I$(INSTALL_PREFIX)/host/include -c $< -o $@
