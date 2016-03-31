@@ -25,13 +25,13 @@ REMOVE_LIBCOI_HOST := rm -rf install/host/lib64/libcoi_host*
 endif
 endif
 
-INSTALL_PREFIX := $(shell pwd)/$(LOCATION)/install
+INSTALL_PREFIX ?= $(shell pwd)/$(LOCATION)/install
 
 HOST_CC := gcc
 HOST_CXX := g++
 
 ifeq (native,$(target))
-MIC_PREFIX := /usr/linux-k1om-4.7/bin/x86_64-k1om-linux-
+MIC_PREFIX ?= /usr/linux-k1om-4.7/bin/x86_64-k1om-linux-
 MIC_CC := $(MIC_PREFIX)gcc
 MIC_CXX := $(MIC_PREFIX)g++
 else
