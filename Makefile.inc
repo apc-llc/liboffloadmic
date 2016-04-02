@@ -60,7 +60,7 @@ ANSELM := $(shell echo $(PS1) | grep -oh anselm)
 LOAD_GCC_MODULE := true
 LOAD_ICC_MODULE := true
 ifneq (,$(ANSELM))
-LOAD_GCC_MODULE := module load gcc/4.9.0
+LOAD_GCC_MODULE := module unload gcc && module load gcc/4.9.0 && module load binutils
 LOAD_ICC_MODULE := module load intel
 endif
 
