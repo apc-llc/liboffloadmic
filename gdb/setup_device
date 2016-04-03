@@ -3,6 +3,7 @@
 my($device) = "mic0";
 my($sysroot) = "/opt/mpss/3.4.3/sysroots/k1om-mpss-linux/";
 my($file_local) = "offload_target_main";
+my($gdb_path) = "/apps/intel/composer_xe_2015.3.187/debugger/gdb";
 
 my($file) = "";
 my($offload_target_main) = `ssh -t $device ps aux 2>/dev/null | grep $file_local`;
@@ -35,10 +36,11 @@ if (!-e "./$file_local")
 
 print "Successfully copied $file to the current folder\n";
 
-system("micnativeloadex /apps/intel/composer_xe_2015.3.187/debugger/gdb/target/mic/bin/gdbserver -a \"--multi :2000\" &");
+system("micnativeloadex $gdb_path/target/mic/bin/gdbserver -a \"--multi :2000\" &");
 
-system("module load python && export PYTHONHOME=/apps/tools/python/2.7.5 && SINK_LD_LIBRARY_PATH=:${HOME}/liboffloadmic/test/../install/target/lib/../lib64 /apps/intel/composer_xe_2015.3.187/debugger/gdb/intel64_mic/bin/gdb-mic -iex \"target extended-remote mic0:2000\" -iex \"set sysroot $sysroot\" -iex \"set solib-search-path ${HOME}/liboffloadmic/install/target/lib64/\" -iex \"file $file_local\" -iex \"attach $pid\"");
+my($gdb_cmd) = "module load python && export PYTHONHOME=/apps/tools/python/2.7.5 && SINK_LD_LIBRARY_PATH=" . $ENV{"SINK_LD_LIBRARY_PATH"} . ":${HOME}/liboffloadmic/test/../install/target/lib/../lib64 $gdb_path/intel64_mic/bin/gdb-mic -iex \"target extended-remote mic0:2000\" -iex \"set sysroot $sysroot\" -iex \"set solib-search-path " . $ENV{"SINK_LD_LIBRARY_PATH"} . "\" -iex \"file $file_local\" -iex \"attach $pid\"";
+print "$gdb_cmd\n";
+system("$gdb_cmd");
 
 system("killall -9 micnativeloadex");
-
 
