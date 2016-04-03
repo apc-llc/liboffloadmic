@@ -384,6 +384,28 @@ GOMP_OFFLOAD_alloc (int device, size_t size)
   return tgt_ptr;
 }
 
+#ifdef ALIGNED_DEVICE_MALLOC_SUPPORT
+extern "C" void *
+GOMP_OFFLOAD_alloc_aligned (int device, size_t size, size_t alignment)
+{
+  TRACE ("(alignment = %zu, size = %zu)", alignment, size);
+
+  void *tgt_ptr;
+  VarDesc vd1[3] = { vd_host2tgt, vd_host2tgt, vd_tgt2host };
+  vd1[0].ptr = &alignment;
+  vd1[0].size = sizeof (alignment);
+  vd1[1].ptr = &size;
+  vd1[1].size = sizeof (size);
+  vd1[2].ptr = &tgt_ptr;
+  vd1[2].size = sizeof (void *);
+  VarDesc2 vd1g[3] = { { "alignment", 0 }, { "size", 0 }, { "tgt_ptr", 0 } };
+
+  offload (__FILE__, __LINE__, device, "__offload_target_alloc_aligned", 3, vd1, vd1g);
+
+  return tgt_ptr;
+}
+#endif // ALIGNED_DEVICE_MALLOC_SUPPORT
+
 extern "C" void
 GOMP_OFFLOAD_free (int device, void *tgt_ptr)
 {
@@ -396,6 +418,21 @@ GOMP_OFFLOAD_free (int device, void *tgt_ptr)
 
   offload (__FILE__, __LINE__, device, "__offload_target_free", 1, &vd1, &vd1g);
 }
+
+#ifdef ALIGNED_DEVICE_MALLOC_SUPPORT
+extern "C" void
+GOMP_OFFLOAD_free_aligned (int device, void *tgt_ptr)
+{
+  TRACE ("(tgt_ptr = %p)", tgt_ptr);
+
+  VarDesc vd1 = vd_host2tgt;
+  vd1.ptr = &tgt_ptr;
+  vd1.size = sizeof (void *);
+  VarDesc2 vd1g = { "tgt_ptr", 0 };
+
+  offload (__FILE__, __LINE__, device, "__offload_target_free_aligned", 1, &vd1, &vd1g);
+}
+#endif // ALIGNED_DEVICE_MALLOC_SUPPORT
 
 extern "C" void *
 GOMP_OFFLOAD_host2dev (int device, void *tgt_ptr, const void *host_ptr,

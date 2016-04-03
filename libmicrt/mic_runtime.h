@@ -104,7 +104,11 @@ micError_t micSetDevice(int device);
 
 micError_t micMalloc(void** devPtr, size_t size);
 
+micError_t micMallocAligned(void** devPtr, size_t size, size_t alignment);
+
 micError_t micFree(void* devPtr);
+
+micError_t micFreeAligned(void* devPtr);
 
 enum micMemcpyKind
 {

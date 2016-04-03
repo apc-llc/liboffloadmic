@@ -112,6 +112,21 @@ extern "C"
 		return micSuccess;
 	}
 
+	micError_t micMallocAligned(void** devPtr, size_t size, size_t alignment)
+	{
+		void * GOMP_OFFLOAD_alloc_aligned (int device, size_t size, size_t alignment);
+
+		if (!devPtr)
+			return micErrorInvalidDevicePointer;
+
+		*devPtr = GOMP_OFFLOAD_alloc_aligned(currentDevice, size, alignment);
+
+		if (!devPtr)
+			return micErrorInvalidDevicePointer;
+
+		return micSuccess;
+	}
+
 	micError_t micFree(void* devPtr)
 	{
 		void GOMP_OFFLOAD_free (int device, void *tgt_ptr);
@@ -120,6 +135,18 @@ extern "C"
 			return micErrorInvalidDevicePointer;
 	
 		GOMP_OFFLOAD_free(currentDevice, devPtr);
+
+		return micSuccess;
+	}
+
+	micError_t micFreeAligned(void* devPtr)
+	{
+		void GOMP_OFFLOAD_free_aligned (int device, void *tgt_ptr);
+
+		if (!devPtr)
+			return micErrorInvalidDevicePointer;
+
+		GOMP_OFFLOAD_free_aligned(currentDevice, devPtr);
 
 		return micSuccess;
 	}
