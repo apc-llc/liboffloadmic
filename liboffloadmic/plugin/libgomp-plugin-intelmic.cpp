@@ -419,21 +419,6 @@ GOMP_OFFLOAD_free (int device, void *tgt_ptr)
   offload (__FILE__, __LINE__, device, "__offload_target_free", 1, &vd1, &vd1g);
 }
 
-#ifdef ALIGNED_DEVICE_MALLOC_SUPPORT
-extern "C" void
-GOMP_OFFLOAD_free_aligned (int device, void *tgt_ptr)
-{
-  TRACE ("(tgt_ptr = %p)", tgt_ptr);
-
-  VarDesc vd1 = vd_host2tgt;
-  vd1.ptr = &tgt_ptr;
-  vd1.size = sizeof (void *);
-  VarDesc2 vd1g = { "tgt_ptr", 0 };
-
-  offload (__FILE__, __LINE__, device, "__offload_target_free_aligned", 1, &vd1, &vd1g);
-}
-#endif // ALIGNED_DEVICE_MALLOC_SUPPORT
-
 extern "C" void *
 GOMP_OFFLOAD_host2dev (int device, void *tgt_ptr, const void *host_ptr,
 		       size_t size)

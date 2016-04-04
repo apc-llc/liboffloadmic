@@ -231,12 +231,7 @@ __offload_target_alloc_aligned (OFFLOAD ofldt)
   VarDesc2 vd2[3] = { { "alignment", 0 }, { "size", 0 }, { "ptr", 0 } };
 
   __offload_target_enter (ofldt, 3, vd1, vd2);
-  ptr = malloc (size + sizeof(void*) + alignment);
-  char* aligned_ptr = (char*)ptr;
-  aligned_ptr += sizeof(void*);
-  aligned_ptr += alignment - (size_t)aligned_ptr % alignment;
-  ((void**)aligned_ptr)[-1] = ptr;
-  ptr = (void*)aligned_ptr;
+  posix_memalign (&ptr, alignment, size);
   TRACE ("(alignment = %zu, size = %zu): ptr = %p", alignment, size, ptr);
   __offload_target_leave (ofldt);
 }
@@ -258,25 +253,6 @@ __offload_target_free (OFFLOAD ofldt)
   free (ptr);
   __offload_target_leave (ofldt);
 }
-
-#ifdef ALIGNED_DEVICE_MALLOC_SUPPORT
-/* Free the aligned memory space pointed to by ptr.  */
-static void
-__offload_target_free_aligned (OFFLOAD ofldt)
-{
-  void *ptr = 0;
-
-  VarDesc vd1 = vd_host2tgt;
-  vd1.ptr = &ptr;
-  vd1.size = sizeof (void *);
-  VarDesc2 vd2 = { "ptr", 0 };
-
-  __offload_target_enter (ofldt, 1, &vd1, &vd2);
-  TRACE ("(ptr = %p)", ptr);
-  free (((void**)ptr)[-1]);
-  __offload_target_leave (ofldt);
-}
-#endif // ALIGNED_DEVICE_MALLOC_SUPPORT
 
 /* Receive var_size bytes from host and store to var_ptr.
    Part 1: Receive var_ptr and var_size from host.  */
@@ -413,11 +389,10 @@ REGISTER (init_proc);
 REGISTER (table_p1);
 REGISTER (table_p2);
 REGISTER (alloc);
-REGISTER (free);
 #ifdef ALIGNED_DEVICE_MALLOC_SUPPORT
 REGISTER (alloc_aligned);
-REGISTER (free_aligned);
 #endif // ALIGNED_DEVICE_MALLOC_SUPPORT
+REGISTER (free);
 REGISTER (host2tgt_p1);
 REGISTER (host2tgt_p2);
 REGISTER (tgt2host_p1);

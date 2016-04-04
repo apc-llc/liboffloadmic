@@ -108,8 +108,6 @@ micError_t micMallocAligned(void** devPtr, size_t size, size_t alignment);
 
 micError_t micFree(void* devPtr);
 
-micError_t micFreeAligned(void* devPtr);
-
 enum micMemcpyKind
 {
 	micMemcpyHostToDevice = 0,
