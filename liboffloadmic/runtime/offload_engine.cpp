@@ -159,7 +159,8 @@ void Engine::init_process(void)
 #ifdef __MIC__
         NULL,
 #else
-        mic_library_path,       // in_LibrarySearchPath
+        mic_library_path ?
+        mic_library_path : "",  // in_LibrarySearchPath
 #endif
         __target_exe->origin,   // in_FileOfOrigin
         __target_exe->offset,   // in_FileOfOriginOffset
