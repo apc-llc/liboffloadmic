@@ -55,7 +55,7 @@ MIC_CXXFLAGS := $(MIC_CFLAGS)
 endif
 
 # Check we are on Anselm. Otherwise, locally installed Xeon Phi is expected.
-ANSELM := $(shell cat /etc/profile.d/prompt.sh | grep -oh anselm)
+ANSELM := $(shell grep -oh anselm /etc/profile.d/prompt.sh 2>/dev/null)
 
 LOAD_GCC_MODULE := true
 LOAD_ICC_MODULE := true
